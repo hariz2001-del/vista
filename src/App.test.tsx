@@ -76,6 +76,18 @@ describe('vistahub.my', () => {
     expect(assign).toHaveBeenCalledWith('https://pos.vistahub.my/#handoff=one-time-code')
   })
 
+  it('offers both demos, each opening in a new tab', () => {
+    render(<App />)
+    const counter = screen.getByRole('link', { name: /try the counter/i })
+    const books = screen.getByRole('link', { name: /try the books/i })
+    expect(counter).toHaveAttribute('href', 'https://demopos.vistahub.my')
+    expect(books).toHaveAttribute('href', 'https://demorms.vistahub.my')
+    for (const link of [counter, books]) {
+      expect(link).toHaveAttribute('target', '_blank')
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+    }
+  })
+
   it('shows the server’s reason when sign-in fails', async () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))

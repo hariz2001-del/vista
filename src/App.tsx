@@ -1,4 +1,4 @@
-import { BookOpenText, LoaderCircle, LogOut, MonitorSmartphone } from 'lucide-react'
+import { ArrowUpRight, BookOpenText, LoaderCircle, LogOut, MonitorSmartphone } from 'lucide-react'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import {
   ApiError,
@@ -43,6 +43,87 @@ const APPS: Array<{
     accent: 'var(--color-drink)',
   },
 ]
+
+/**
+ * The public demos: the same apps as the real ones, built in demo mode, with
+ * months of made-up trading and no sign-in. Each visitor's demo lives in their
+ * own browser and starts fresh every 3 hours.
+ */
+const DEMOS: Array<{
+  href: string
+  kicker: string
+  title: string
+  body: string
+  icon: typeof BookOpenText
+  accent: string
+}> = [
+  {
+    href: import.meta.env.VITE_DEMO_POS_URL ?? 'https://demopos.vistahub.my',
+    kicker: 'Demo · Counter POS',
+    title: 'Try the counter',
+    body: 'A shift already open and today\u2019s first dozen sales rung up. Take orders, add options and discounts, mark them paid, look back through the receipts.',
+    icon: MonitorSmartphone,
+    accent: 'var(--color-food)',
+  },
+  {
+    href: import.meta.env.VITE_DEMO_RMS_URL ?? 'https://demorms.vistahub.my',
+    kicker: 'Demo · Owner books RMS',
+    title: 'Try the books',
+    body: 'Four months of a real-looking stall: daily sales, what sold, cash in and out, expenses, and what each partner is owed.',
+    icon: BookOpenText,
+    accent: 'var(--color-drink)',
+  },
+]
+
+function DemoSection() {
+  return (
+    <section aria-labelledby="demo-title" className="border-t border-line bg-surface">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
+        <p className="page-kicker">No sign-up</p>
+        <h2 id="demo-title" className="mt-2 text-3xl leading-tight sm:text-4xl">
+          Try it with a demo stall first.
+        </h2>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
+          The same Vista as the real thing, filled with made-up trading and already signed in.
+          Anything you change stays in your own browser, and the demo starts fresh every 3 hours.
+        </p>
+
+        <ul className="mt-6 grid gap-4 md:grid-cols-2">
+          {DEMOS.map((demo) => {
+            const Icon = demo.icon
+            return (
+              <li key={demo.href}>
+                <a
+                  href={demo.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex h-full items-start gap-4 border border-line border-l-4 bg-canvas px-4 py-5 transition-colors hover:bg-white"
+                  style={{ borderLeftColor: demo.accent }}
+                >
+                  <Icon aria-hidden="true" strokeWidth={1.6} className="mt-1 size-6 shrink-0 text-ink" />
+                  <span className="min-w-0 flex-1">
+                    <span className="page-kicker block">{demo.kicker}</span>
+                    <span className="mt-1 flex items-center gap-1.5 font-display text-2xl font-bold tracking-[-0.03em]">
+                      {demo.title}
+                      <ArrowUpRight
+                        aria-hidden="true"
+                        className="size-5 text-muted transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                      />
+                    </span>
+                    <span className="mt-1 block text-sm leading-relaxed text-muted">{demo.body}</span>
+                    <span className="mt-3 block text-xs font-bold text-ink">
+                      Opens in a new tab<span className="sr-only"> — {demo.href}</span>
+                    </span>
+                  </span>
+                </a>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+    </section>
+  )
+}
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : 'Something went wrong. Try again.'
@@ -415,6 +496,8 @@ export default function App() {
           )}
         </section>
       </main>
+
+      <DemoSection />
 
       <footer className="border-t border-line">
         <p className="mx-auto max-w-6xl px-4 py-5 text-xs text-muted sm:px-6">

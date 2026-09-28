@@ -5,6 +5,10 @@ interface ImportMetaEnv {
   readonly VITE_POS_URL?: string
   /** The owner dashboard. Defaults to https://rms.vistahub.my. */
   readonly VITE_RMS_URL?: string
+  /** The public counter demo. Defaults to https://demopos.vistahub.my. */
+  readonly VITE_DEMO_POS_URL?: string
+  /** The public books demo. Defaults to https://demorms.vistahub.my. */
+  readonly VITE_DEMO_RMS_URL?: string
 }
 
 interface ImportMeta {
