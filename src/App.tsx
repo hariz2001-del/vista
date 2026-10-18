@@ -75,6 +75,63 @@ const DEMOS: Array<{
   },
 ]
 
+/**
+ * Two walkthroughs with a voice-over: Vista itself, and Chopper, the receipt
+ * bot on Telegram. Files are served from /videos; nothing loads until played.
+ */
+const VIDEOS: Array<{ src: string; poster: string; kicker: string; title: string; body: string; length: string }> = [
+  {
+    src: '/videos/vista-demo.mp4',
+    poster: '/videos/vista-demo.jpg',
+    kicker: 'Video · 5 min',
+    title: 'Vista, start to finish',
+    body: 'The counter, the books, stock counts, rosters and payroll, and the Team app on a phone.',
+    length: '5:15',
+  },
+  {
+    src: '/videos/chopper-demo.mp4',
+    poster: '/videos/chopper-demo.jpg',
+    kicker: 'Video · under 2 min',
+    title: 'Chopper, the receipt bot',
+    body: 'Send a bill on Telegram; it is read, booked into Vista and filed in Google Drive. Ask it for sales, the stock PDF or the roster.',
+    length: '1:43',
+  },
+]
+
+function VideoSection() {
+  return (
+    <section aria-labelledby="video-title" className="border-t border-line">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
+        <p className="page-kicker">See it in action</p>
+        <h2 id="video-title" className="mt-2 text-3xl leading-tight sm:text-4xl">
+          Watch a stall run on Vista.
+        </h2>
+        <ul className="mt-6 grid gap-6 md:grid-cols-2">
+          {VIDEOS.map((video) => (
+            <li key={video.src} className="flex flex-col border border-line bg-surface">
+              <video
+                controls
+                preload="none"
+                playsInline
+                poster={video.poster}
+                className="aspect-video w-full bg-ink object-contain"
+                aria-label={`${video.title} (${video.length}, with voice-over and subtitles)`}
+              >
+                <source src={video.src} type="video/mp4" />
+              </video>
+              <div className="px-4 py-4">
+                <p className="page-kicker">{video.kicker}</p>
+                <h3 className="mt-1 font-display text-2xl font-bold tracking-[-0.03em]">{video.title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted">{video.body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}
+
 function DemoSection() {
   return (
     <section aria-labelledby="demo-title" className="border-t border-line bg-surface">
@@ -497,6 +554,7 @@ export default function App() {
         </section>
       </main>
 
+      <VideoSection />
       <DemoSection />
 
       <footer className="border-t border-line">
