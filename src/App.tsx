@@ -1,22 +1,25 @@
-import { ArrowUpRight, BookOpenText, LoaderCircle, LogOut, MonitorSmartphone } from 'lucide-react'
+import { ArrowUpRight, BookOpenText, LoaderCircle, LogOut, MessageCircle, MonitorSmartphone } from 'lucide-react'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import {
   ApiError,
   handoffUrl,
-  register,
   signIn,
   type AppTarget,
   type HubSession,
 } from './lib/api.ts'
 
 /**
- * vistahub.my: register a business or sign in, then choose which app to open.
+ * vistahub.my: get in touch to use Vista, or sign in and choose which app to open.
  *
  * Nothing here holds data. The POS and RMS each keep their own sign-in on
  * their own domain; this page hands the owner across with a one-time code.
  */
 
-type Mode = 'register' | 'signin'
+type Mode = 'contact' | 'signin'
+
+/** WhatsApp, in international form without the plus (e.g. 60123456789). */
+const WHATSAPP_NUMBER = ''
+const WHATSAPP_TEXT = 'Hi, I’m interested in Vista for my business.'
 
 const APPS: Array<{
   target: AppTarget
@@ -61,7 +64,7 @@ const DEMOS: Array<{
     href: import.meta.env.VITE_DEMO_POS_URL ?? 'https://demopos.vistahub.my',
     kicker: 'Demo · Counter POS',
     title: 'Try the counter',
-    body: 'A shift already open and today\u2019s first dozen sales rung up. Take orders, add options and discounts, mark them paid, look back through the receipts.',
+    body: 'A shift already open and today\u2019s first dozen sales rung up. Take orders, add options and discounts, mark them paid, look back through the receipts, and do the closing stock count.',
     icon: MonitorSmartphone,
     accent: 'var(--color-food)',
   },
@@ -69,7 +72,7 @@ const DEMOS: Array<{
     href: import.meta.env.VITE_DEMO_RMS_URL ?? 'https://demorms.vistahub.my',
     kicker: 'Demo · Owner books RMS',
     title: 'Try the books',
-    body: 'Four months of a real-looking stall: daily sales, what sold, cash in and out, expenses, and what each partner is owed.',
+    body: 'Four months of a real-looking stall: daily sales, what sold, cash in and out, expenses, what each partner is owed and has taken out, the staff roster and payroll, and the closing stock counts.',
     icon: BookOpenText,
     accent: 'var(--color-drink)',
   },
@@ -217,105 +220,31 @@ function Field({
   )
 }
 
-function RegisterForm({ onDone }: { onDone: (session: HubSession) => void }) {
-  const [businessName, setBusinessName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [pin, setPin] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-
-  const passwordShort = password.length > 0 && password.length < 12
-  const pinInvalid = pin.length > 0 && !/^\d{4}$/.test(pin)
-  const canSubmit =
-    businessName.trim().length > 0 &&
-    email.trim().length > 0 &&
-    password.length >= 12 &&
-    /^\d{4}$/.test(pin)
-
-  async function submit(event: FormEvent) {
-    event.preventDefault()
-    if (!canSubmit || busy) return
-    setBusy(true)
-    setError(null)
-    try {
-      onDone(await register({ businessName: businessName.trim(), email: email.trim(), password, pin }))
-    } catch (caught) {
-      setError(messageOf(caught))
-      setBusy(false)
-    }
-  }
-
+/** No sign-up here: businesses get in touch, to use Vista as it is or have it built for them. */
+function ContactPanel({ onSignIn }: { onSignIn: () => void }) {
   return (
-    <form onSubmit={(event) => void submit(event)} className="space-y-4" noValidate>
-      <Field id="reg-name" label="Business name" hint="What your customers call you. You can change it later.">
-        <input
-          id="reg-name"
-          aria-describedby="reg-name-hint"
-          value={businessName}
-          onChange={(event) => setBusinessName(event.target.value)}
-          autoComplete="organization"
-          maxLength={80}
-          className="vista-control w-full px-3"
-        />
-      </Field>
-      <Field id="reg-email" label="Email" hint="You sign in with this, at the counter and in the books.">
-        <input
-          id="reg-email"
-          aria-describedby="reg-email-hint"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          autoComplete="email"
-          className="vista-control w-full px-3"
-        />
-      </Field>
-      <Field
-        id="reg-password"
-        label="Password"
-        hint={passwordShort ? `${12 - password.length} more characters.` : 'At least 12 characters.'}
-      >
-        <input
-          id="reg-password"
-          aria-describedby="reg-password-hint"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          autoComplete="new-password"
-          aria-invalid={passwordShort}
-          className="vista-control w-full px-3"
-        />
-      </Field>
-      <Field
-        id="reg-pin"
-        label="Counter PIN"
-        hint={pinInvalid ? 'Exactly 4 digits.' : 'The cashier types this to open and close a shift. 4 digits.'}
-      >
-        <input
-          id="reg-pin"
-          aria-describedby="reg-pin-hint"
-          value={pin}
-          onChange={(event) => setPin(event.target.value.replace(/\D/g, '').slice(0, 4))}
-          inputMode="numeric"
-          autoComplete="off"
-          aria-invalid={pinInvalid}
-          className="vista-control w-32 px-3 font-mono tracking-[0.4em]"
-        />
-      </Field>
-
-      <p className="min-h-5 text-sm font-bold text-critical" role="alert">
-        {error ?? ''}
+    <div>
+      <p className="page-kicker">Get Vista</p>
+      <h2 className="mt-1 text-2xl leading-tight">Want Vista for your business?</h2>
+      <p className="mt-3 text-sm leading-relaxed text-muted">
+        Use Vista as it is, or have it built and tailored for your business: your name, your menu, your way of
+        working. Message me and we&apos;ll set it up.
       </p>
-
-      <button
-        type="submit"
-        disabled={!canSubmit || busy}
-        className="vista-button-primary flex w-full items-center justify-center gap-2"
+      <a
+        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_TEXT)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="vista-button-primary mt-5 flex min-h-12 w-full items-center justify-center gap-2"
       >
-        {busy ? <LoaderCircle aria-hidden="true" className="size-4 animate-spin" /> : null}
-        Create my business
-      </button>
-    </form>
+        <MessageCircle aria-hidden="true" className="size-5" /> Contact me on WhatsApp
+      </a>
+      <div className="mt-6 border-t border-line pt-4 text-sm text-muted">
+        Already using Vista?{' '}
+        <button type="button" onClick={onSignIn} className="font-bold text-ink underline underline-offset-2">
+          Sign in
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -459,7 +388,7 @@ function AppPicker({
 
 export default function App() {
   const [session, setSession] = useState<HubSession | null>(null)
-  const [mode, setMode] = useState<Mode>('register')
+  const [mode, setMode] = useState<Mode>('contact')
   const [notice, setNotice] = useState<string | null>(null)
 
   return (
@@ -504,11 +433,23 @@ export default function App() {
               </dt>
               <dd>Only you can see them. Every business on Vista is kept completely separate.</dd>
             </div>
+            <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 py-3">
+              <dt className="font-mono text-xs font-bold uppercase tracking-[0.06em] text-muted">
+                Team
+              </dt>
+              <dd>Rosters, shift picks, attendance and payroll. Staff sign in on their phone with a PIN.</dd>
+            </div>
+            <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-3 py-3">
+              <dt className="font-mono text-xs font-bold uppercase tracking-[0.06em] text-muted">
+                Stock
+              </dt>
+              <dd>A quick closing count at the counter, so tomorrow&apos;s restock is planned from what is left.</dd>
+            </div>
           </dl>
         </section>
 
         <section
-          aria-label={session ? 'Choose an app' : mode === 'register' ? 'Register' : 'Sign in'}
+          aria-label={session ? 'Choose an app' : mode === 'contact' ? 'Get Vista' : 'Sign in'}
           className="self-start border border-line bg-surface p-6 shadow-[0_1px_0_rgba(24,33,29,0.04)]"
         >
           {session ? (
@@ -524,31 +465,14 @@ export default function App() {
                 setNotice(message)
               }}
             />
+          ) : mode === 'contact' ? (
+            <ContactPanel onSignIn={() => setMode('signin')} />
           ) : (
             <>
-              <div className="mb-6 grid grid-cols-2 border border-line" role="group" aria-label="Register or sign in">
-                {(['register', 'signin'] as const).map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    aria-pressed={mode === option}
-                    onClick={() => {
-                      setMode(option)
-                      setNotice(null)
-                    }}
-                    className={`min-h-11 text-sm font-bold transition-colors ${
-                      mode === option ? 'bg-rail text-white' : 'bg-surface text-muted hover:text-ink'
-                    }`}
-                  >
-                    {option === 'register' ? 'New business' : 'Sign in'}
-                  </button>
-                ))}
-              </div>
-              {mode === 'register' ? (
-                <RegisterForm onDone={setSession} />
-              ) : (
-                <SignInForm key={notice ?? ''} onDone={setSession} notice={notice} />
-              )}
+              <SignInForm key={notice ?? ''} onDone={setSession} notice={notice} />
+              <button type="button" onClick={() => setMode('contact')} className="mt-4 text-sm font-bold text-muted underline underline-offset-2 hover:text-ink">
+                New to Vista? Get in touch
+              </button>
             </>
           )}
         </section>
